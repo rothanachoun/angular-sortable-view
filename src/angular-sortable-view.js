@@ -96,11 +96,7 @@
 
 				this.$moveUpdate = function(opts, mouse, svElement, svOriginal, svPlaceholder, originatingPart, originatingIndex){
 					var svRect = svElement[0].getBoundingClientRect();
-					if(opts.tolerance === 'element')
-						mouse = {
-							x: ~~(svRect.left + svRect.width/2),
-							y: ~~(svRect.top + svRect.height/2)
-						};
+          var element = {};
 
 					sortingInProgress = true;
 					candidates = [];
@@ -142,6 +138,31 @@
 						y: mouse.y + document.body.scrollTop - mouse.offset.y*svRect.height
 					});
 
+          // ----- tolerance
+          var placeholderRect = $placeholder[0].getBoundingClientRect();
+          var helperRect = $helper[0].getBoundingClientRect();
+          if(helperRect.left < placeholderRect.left && placeholderRect.right - helperRect.right <= svRect.width/2 )
+            helperRect.top - placeholderRect.top > svRect.height/2 ? opts.side = 'right' : opts.side = 'left';
+
+          if(helperRect.right > placeholderRect.right && helperRect.left - placeholderRect.left < svRect.width/2 )
+            placeholderRect.top - helperRect.top > svRect.height/2 ? opts.side = 'left' : opts.side = 'right';
+
+          if(opts.tolerance === 'element'){
+            element.x = ~~(svRect.right + svRect.width/2);
+            element.y = ~~(svRect.top + svRect.height/2);
+
+            if(opts.side === 'left'){
+              element.x = ~~(svRect.left);
+              element.y = ~~(svRect.top + svRect.height/2);
+            }
+            if(opts.side === 'right'){
+              element.x = ~~(svRect.right);
+              element.y = ~~(svRect.top + svRect.height/2);
+            }
+          }else {
+            element = mouse;
+          }
+
 					// ----- manage candidates
 					getSortableElements(mapKey).forEach(function(se, index){
 						if(opts.containment != null){
@@ -160,16 +181,16 @@
 							(se.element[0].scrollHeight || se.element[0].scrollWidth)){ // element is visible
 							candidates.push({
 								element: se.element,
-								q: (center.x - mouse.x)*(center.x - mouse.x) + (center.y - mouse.y)*(center.y - mouse.y),
+								q: (center.x - element.x)*(center.x - element.x) + (center.y - element.y)*(center.y - element.y),
 								view: se.getPart(),
 								targetIndex: se.getIndex(),
-								after: shouldBeAfter(center, mouse, isGrid)
+								after: shouldBeAfter(center, element, isGrid)
 							});
 						}
 						if(se.container && !se.element[0].querySelector('[sv-element]:not(.sv-placeholder):not(.sv-source)')){ // empty container
 							candidates.push({
 								element: se.element,
-								q: (center.x - mouse.x)*(center.x - mouse.x) + (center.y - mouse.y)*(center.y - mouse.y),
+								q: (center.x - element.x)*(center.x - element.x) + (center.y - element.y)*(center.y - element.y),
 								view: se.getPart(),
 								targetIndex: 0,
 								container: true
@@ -182,7 +203,7 @@
 						y: ~~(pRect.top + pRect.height/2)
 					};
 					candidates.push({
-						q: (pCenter.x - mouse.x)*(pCenter.x - mouse.x) + (pCenter.y - mouse.y)*(pCenter.y - mouse.y),
+						q: (pCenter.x - element.x)*(pCenter.x - element.x) + (pCenter.y - element.y)*(pCenter.y - element.y),
 						element: $placeholder,
 						placeholder: true
 					});
