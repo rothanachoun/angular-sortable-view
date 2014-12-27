@@ -42,14 +42,14 @@
 
 				// ----- hack due to https://github.com/angular/angular.js/issues/8044
 				$attrs.svOnStart = $attrs.$$element[0].attributes['sv-on-start'];
-				$attrs.svOnStart = $attrs.svOnStart && $attrs.svOnStart.value; 
+				$attrs.svOnStart = $attrs.svOnStart && $attrs.svOnStart.value;
 
 				$attrs.svOnStop = $attrs.$$element[0].attributes['sv-on-stop'];
-				$attrs.svOnStop = $attrs.svOnStop && $attrs.svOnStop.value; 
+				$attrs.svOnStop = $attrs.svOnStop && $attrs.svOnStop.value;
 				// -------------------------------------------------------------------
 
 				var onStart = $parse($attrs.svOnStart);
-				var onStop = $parse($attrs.svOnStop);				
+				var onStop = $parse($attrs.svOnStop);
 
 				this.sortingInProgress = function(){
 					return sortingInProgress;
@@ -246,7 +246,7 @@
 						options = void 0;
 						$helper = void 0;
 						$original = void 0;
-						
+
 						// sv-on-stop callback
 						onStop($scope, {
 							$part: originatingPart.model(originatingPart.scope),
@@ -384,8 +384,24 @@
 
 				var body = angular.element(document.body);
 				var html = angular.element(document.documentElement);
-				
+
 				var moveExecuted;
+
+        function dragScrolling(helperRect, containmentRect, opts){
+          var containment = angular.element(opts.containment);
+          var scrollToTop = function(){
+            containment.scrollTop(containment.scrollTop() - 16);
+          }
+          var scrollToBottom = function(){
+            containment.scrollTop(containment.scrollTop() + 16);
+          }
+
+          if(containmentRect.bottom - helperRect.bottom <= 5)
+            scrollToBottom();
+
+          if(helperRect.top - containmentRect.top <= 5)
+            scrollToTop();
+        }
 
 				function onMousedown(e){
 					touchFix(e);
@@ -447,6 +463,8 @@
 						}
 						this.style.left = targetLeft - body.scrollLeft + 'px';
 						this.style.top = targetTop - body.scrollTop + 'px';
+
+            dragScrolling(helperRect, containmentRect, opts);
 					};
 
 					var pointerOffset = {
