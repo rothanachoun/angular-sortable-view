@@ -367,6 +367,8 @@
 				$scope.$ctrl = this;
 			}],
 			link: function($scope, $element, $attrs, $controllers){
+        if($scope.$eval($attrs.isDisabled)) return
+
 				var sortableElement = {
 					element: $element,
 					getPart: $controllers[0].getPart,
